@@ -1,0 +1,120 @@
+run:
+  hours: 1.5
+  data_dir: data
+  status_every_sec: 5
+  quote_min_interval_ms: 10
+
+thresholds:
+  lookback_ms: 150
+  residual_frac: 0.5
+  follow_timeout_ms: 2000
+  follow_frac: 0.5
+  impulse_cooldown_ms: 400
+  paper_timeout_ms: 2500
+  paper_exit_bps: 1.5
+  max_spread_bps: 8.0
+  crypto_impulse_bps: 6.0
+  crypto_edge_bps: 6.0
+  stock_impulse_bps: 8.0
+  stock_edge_bps: 8.0
+  fill_delay_ms: 100
+  fill_delay_jitter_ms: 50
+  leverage: 50
+  start_equity_usd: 20
+  liq_price_bps: 100
+  fill_keep_frac: 0.5
+
+# Web-token MEXC (https://github.com/oboshto/mexc-futures-sdk).
+# Token: env MEXC_WEB_TOKEN only. record/replay never send orders.
+# To actually place: enabled true AND dry_run false AND CLI --confirm.
+live:
+  enabled: false
+  dry_run: true
+  open_type: 1
+  timeout_sec: 10
+  tp_bps: 3.0
+  sl_bps: 100
+  attach_tpsl: true
+
+pairs:
+  # frequent: your SK Hynix style
+  - id: SKHYNIXSTOCK_USDT
+    kind: stock
+    mode: frequent
+    mexc: SKHYNIXSTOCK_USDT
+    zero_taker: true
+    contract_size: 0.001
+    impulse_bps: 3.0
+    edge_bps: 3.0
+    impulse_cooldown_ms: 200
+    leaders:
+      - { venue: binance, symbol: SKHYNIXUSDT, primary: true }
+      - { venue: bitget, symbol: SKHYNIXUSDT }
+
+  - id: SNDKSTOCK_USDT
+    kind: stock
+    mode: frequent
+    mexc: SNDKSTOCK_USDT
+    zero_taker: true
+    contract_size: 0.001
+    impulse_bps: 3.0
+    edge_bps: 3.0
+    impulse_cooldown_ms: 200
+    leaders:
+      - { venue: binance, symbol: SNDKUSDT, primary: true }
+      - { venue: bitget, symbol: SNDKUSDT }
+
+  # strict: 8/8 stocks, 6/6 crypto
+  - id: SPCXSTOCK_USDT
+    kind: stock
+    mode: strict
+    mexc: SPCXSTOCK_USDT
+    zero_taker: true
+    contract_size: 0.01
+    leaders:
+      - { venue: binance, symbol: SPCXUSDT, primary: true }
+      - { venue: bitget, symbol: SPCXUSDT }
+
+  - id: SOXL_USDT
+    kind: stock
+    mode: strict
+    mexc: SOXL_USDT
+    zero_taker: true
+    contract_size: 0.01
+    leaders:
+      - { venue: binance, symbol: SOXLUSDT, primary: true }
+      - { venue: bitget, symbol: SOXLUSDT }
+
+  - id: AMDSTOCK_USDT
+    kind: stock
+    mode: strict
+    mexc: AMDSTOCK_USDT
+    zero_taker: true
+    contract_size: 0.01
+    leaders:
+      - { venue: binance, symbol: AMDUSDT, primary: true }
+      - { venue: bitget, symbol: AMDUSDT }
+
+  - id: SUI_USDT
+    kind: crypto
+    mode: strict
+    mexc: SUI_USDT
+    zero_taker: true
+    contract_size: 1
+    impulse_bps: 4.0
+    edge_bps: 4.0
+    leaders:
+      - { venue: binance, symbol: SUIUSDT, primary: true }
+      - { venue: bitget, symbol: SUIUSDT }
+
+  - id: PEPE_USDT
+    kind: crypto
+    mode: strict
+    mexc: PEPE_USDT
+    zero_taker: true
+    contract_size: 10000000
+    impulse_bps: 4.0
+    edge_bps: 4.0
+    leaders:
+      - { venue: binance, symbol: 1000PEPEUSDT, primary: true, px_mult: 0.001 }
+      - { venue: bitget, symbol: PEPEUSDT }

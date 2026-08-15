@@ -1,0 +1,22 @@
+[project]
+name = "hftv2"
+version = "0.1.0"
+description = "MEXC lead-lag recorder and paper fill (public market data only)"
+requires-python = ">=3.11"
+dependencies = [
+    "websockets>=12.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+hftv2 = "hftv2.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["hftv2*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
