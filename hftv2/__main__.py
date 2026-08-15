@@ -146,6 +146,30 @@ def cmd_live_order(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_live_close(args: argparse.Namespace) -> int:
+    try:
+        client = _client(args)
+        client.warmup([args.symbol])
+        out = client.close_position(
+            args.symbol,
+            vol=args.vol,
+            price=args.price,
+            confirm=args.confirm,
+        )
+    except MexcWebError as exc:
+        print(f"live-close failed: {exc}")
+        return 1
+    import json as _json
+
+    print(_json.dumps(out, indent=2, default=str))
+    if out.get("dry_run"):
+        print("not sent:", out.get("reason"))
+        print("to send: live.enabled true, dry_run false, and --confirm")
+    elif client.last_rtt_ms is not None:
+        print(f"close round-trip {client.last_rtt_ms:.0f}ms")
+    return 0
+
+
 def cmd_live_ping(args: argparse.Namespace) -> int:
     load_dotenv()
     cfg = load_config(args.config)
@@ -222,6 +246,14 @@ def main(argv: list[str] | None = None) -> int:
     lo.add_argument("--no-tpsl", action="store_true", help="do not attach take-profit / stop-loss")
     lo.add_argument("--confirm", action="store_true", help="required to actually send when live")
     lo.set_defaults(func=cmd_live_order)
+
+    lc = sub.add_parser("live-close", help="market-close the open position on a symbol")
+    lc.add_argument("--config", default="config.yaml")
+    lc.add_argument("--symbol", required=True, help="MEXC contract, e.g. SNDKSTOCK_USDT")
+    lc.add_argument("--vol", type=float, default=None, help="partial close volume; default = full")
+    lc.add_argument("--price", type=float, default=None)
+    lc.add_argument("--confirm", action="store_true", help="required to actually send when live")
+    lc.set_defaults(func=cmd_live_close)
 
     args = p.parse_args(argv)
     if args.cmd == "record" and args.hours is not None and args.seconds is None:

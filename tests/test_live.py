@@ -175,6 +175,49 @@ def test_get_response_failure_retries() -> None:
     assert len(connects) == 2
 
 
+def test_close_position_resolves_side_and_id() -> None:
+    client = MexcWebClient(LiveConfig(enabled=False, dry_run=True), token="WEB_FAKE")
+
+    def fake_open_positions(symbol=None):
+        return {"data": [{"symbol": "SNDKSTOCK_USDT", "positionType": 1,
+                          "holdVol": 3, "positionId": 42}]}
+
+    def fake_ticker(symbol):
+        return {"data": {"lastPrice": 100.0}}
+
+    client.open_positions = fake_open_positions  # type: ignore[method-assign]
+    client.ticker = fake_ticker  # type: ignore[method-assign]
+    client.contract_detail = lambda s: {"data": {"symbol": s, "priceUnit": 0.01, "priceScale": 2, "volUnit": 1, "minVol": 1}}  # type: ignore[method-assign]
+    out = client.close_position("SNDKSTOCK_USDT", confirm=True)
+    assert out["sent"] is False  # dry-run
+    assert out["body"]["side"] == 4  # close long
+    assert out["body"]["vol"] == 3  # full hold
+    assert out["body"]["positionId"] == 42
+    assert "takeProfitPrice" not in out["body"]
+
+
+def test_close_short_and_partial() -> None:
+    client = MexcWebClient(LiveConfig(enabled=False, dry_run=True), token="WEB_FAKE")
+    client.open_positions = lambda symbol=None: {  # type: ignore[method-assign]
+        "data": [{"symbol": "SUI_USDT", "positionType": 2, "holdVol": 10, "positionId": 7}]
+    }
+    client.ticker = lambda symbol: {"data": {"lastPrice": 1.0}}  # type: ignore[method-assign]
+    client.contract_detail = lambda s: {"data": {"symbol": s, "priceUnit": 0.0001, "priceScale": 4, "volUnit": 1, "minVol": 1}}  # type: ignore[method-assign]
+    out = client.close_position("SUI_USDT", vol=4, confirm=True)
+    assert out["body"]["side"] == 2  # close short
+    assert out["body"]["vol"] == 4  # partial
+
+
+def test_close_no_position_raises() -> None:
+    client = MexcWebClient(LiveConfig(), token="WEB_FAKE")
+    client.open_positions = lambda symbol=None: {"data": []}  # type: ignore[method-assign]
+    try:
+        client.close_position("SNDKSTOCK_USDT", confirm=True)
+        raise AssertionError("expected MexcWebError")
+    except MexcWebError as exc:
+        assert "no open position" in str(exc)
+
+
 def test_contract_spec_cached() -> None:
     client = MexcWebClient(LiveConfig(), token="WEB_FAKE")
     calls = {"n": 0}

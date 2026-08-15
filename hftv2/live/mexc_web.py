@@ -295,6 +295,67 @@ class MexcWebClient:
             raise MexcWebError("refusing live cancel without confirm=True")
         return self._post("/private/order/cancel", ids)
 
+    def position_for(self, symbol: str) -> dict[str, Any] | None:
+        """Live position for one symbol, or None. Used to close without the
+        caller having to know the positionId (same as clicking Close in the UI)."""
+        resp = self.open_positions(symbol)
+        rows = resp.get("data") if isinstance(resp, dict) else resp
+        if isinstance(rows, dict):
+            rows = rows.get("result") or rows.get("data") or [rows]
+        if not isinstance(rows, list):
+            return None
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            if row.get("symbol") != symbol:
+                continue
+            if float(row.get("holdVol") or 0) <= 0:
+                continue
+            return row
+        return None
+
+    def close_position(
+        self,
+        symbol: str,
+        *,
+        vol: float | None = None,
+        price: float | None = None,
+        confirm: bool = False,
+    ) -> dict[str, Any]:
+        """Market-close the open position on `symbol`. Resolves side + positionId
+        + volume from the live position, exactly like the web Close button."""
+        pos = self.position_for(symbol)
+        if pos is None:
+            raise MexcWebError(f"no open position on {symbol}")
+        pos_type = int(pos.get("positionType") or 0)  # 1 long, 2 short
+        if pos_type == 1:
+            side = "close_long"
+        elif pos_type == 2:
+            side = "close_short"
+        else:
+            raise MexcWebError(f"unknown positionType {pos_type} on {symbol}")
+        hold = float(pos.get("holdVol") or 0)
+        close_vol = hold if vol is None else min(float(vol), hold)
+        if close_vol <= 0:
+            raise MexcWebError(f"nothing to close on {symbol}")
+        if price is None:
+            td = self.ticker(symbol).get("data") or {}
+            last = td.get("lastPrice") or td.get("fairPrice")
+            if last is None:
+                raise MexcWebError("ticker has no lastPrice; pass price=")
+            price = float(last)
+        return self.submit_order(
+            symbol=symbol,
+            side=side,
+            vol=close_vol,
+            price=float(price),
+            market=True,
+            position_id=int(pos["positionId"]) if pos.get("positionId") is not None else None,
+            confirm=confirm,
+            attach_tpsl=False,
+            fetch_contract=True,
+        )
+
     def _get(self, path: str, auth: bool = True) -> dict[str, Any]:
         headers = dict(_HEADERS)
         if auth:

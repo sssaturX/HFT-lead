@@ -97,11 +97,13 @@ live:
 
 И та же команда с `--confirm`. Нужны **все три**: `enabled true` + `dry_run false` + `--confirm`.
 
-Закрыть лонг:
+Закрыть позицию (сам найдёт сторону, `positionId` и объём — как кнопка Close на сайте):
 
 ```powershell
-python run.py live-order --symbol SNDKSTOCK_USDT --side close_long --vol 1 --market --position-id ID --confirm
+python run.py live-close --symbol SNDKSTOCK_USDT --confirm
 ```
+
+Частичное закрытие — `--vol N`. Ручной вариант через `live-order --side close_long --position-id ID` тоже остался.
 
 `vol` — **контракты MEXC**, не доллары. У SNDK `contractSize=0.001`, 1 контракт ≈ цена × 0.001 USDT (на ~$1650 это ≈ $1.65).
 
@@ -133,4 +135,5 @@ python run.py replay data\run-XXXX
 python run.py live-status
 python run.py live-ping
 python run.py live-order --symbol SNDKSTOCK_USDT --side long --vol 1 --market --confirm
+python run.py live-close --symbol SNDKSTOCK_USDT --confirm
 ```
