@@ -37,7 +37,7 @@ live:
   attach_tpsl: true
 
 pairs:
-  # frequent: your SK Hynix style
+  # frequent: looser impulse/edge (tokenized equity perps)
   - id: SKHYNIXSTOCK_USDT
     kind: stock
     mode: frequent
