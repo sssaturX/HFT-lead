@@ -1,12 +1,47 @@
 [project]
 name = "hftv2"
 version = "0.1.0"
-description = "MEXC lead-lag recorder and paper fill (public market data only)"
+description = "Lead-lag recorder and paper fill engine for MEXC USDT perpetuals"
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
+authors = [
+    { name = "Santori" },
+]
+keywords = [
+    "hft",
+    "mexc",
+    "lead-lag",
+    "market-data",
+    "paper-trading",
+    "binance",
+    "bitget",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "websockets>=12.0",
     "pyyaml>=6.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sssaturX/hft-mexc"
+Repository = "https://github.com/sssaturX/hft-mexc"
+Issues = "https://github.com/sssaturX/hft-mexc/issues"
 
 [project.scripts]
 hftv2 = "hftv2.__main__:main"
@@ -20,3 +55,4 @@ include = ["hftv2*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+testpaths = ["tests"]

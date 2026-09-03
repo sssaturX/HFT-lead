@@ -202,7 +202,10 @@ def cmd_live_ping(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     _setup_log()
-    p = argparse.ArgumentParser(prog="hftv2", description="MEXC lead-lag recorder + paper fill")
+    p = argparse.ArgumentParser(
+        prog="hftv2",
+        description="Lead-lag recorder and paper fill engine for MEXC USDT perpetuals",
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
     rec = sub.add_parser("record", help="record public books and run paper fills")
